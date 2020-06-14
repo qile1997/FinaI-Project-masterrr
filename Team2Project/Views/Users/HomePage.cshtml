@@ -1,0 +1,29 @@
+﻿
+@{
+    ViewBag.Title = "HomePage";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    if (Session["Student"] == null)
+    {
+        Layout = null;
+        Response.Redirect("/Users/Login");
+    }
+}
+
+<style>
+    body {
+        background-image: url('../../Content/eduvologo.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    p{
+        border-color:transparent;
+        background-color:transparent;
+        color:transparent;
+    }
+    hr {
+        border-color:transparent;
+        background-color:transparent;
+        color:transparent;
+    }
+</style>

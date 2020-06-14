@@ -1,0 +1,106 @@
+﻿@model Team2Project.Models.Courses
+
+@{
+    ViewBag.Title = "Course Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    if (Session["Student"] == null)
+    {
+        Layout = null;
+        Response.Redirect("/Users/Login");
+    }
+}
+
+@if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DiplomaInIT.ToString())
+{
+    <h2> Diploma In IT </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DiplomaInSE.ToString())
+{
+    <h2> Diploma In SE </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DegreeInIT.ToString())
+{
+    <h2> Degree In IT </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DegreeInSE.ToString())
+{
+    <h2> Degree In SE </h2>
+}
+
+@using (Html.BeginForm())
+{
+
+    <div class="form-horizontal">
+        <hr />
+
+        <div class="form-group">
+            @Html.Label("Course Name", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("Courses", null, "--Select Course--", htmlAttributes: new { @class = "form-control w3-btn w3-white w3-border w3-border-red w3-round-large w3-padding-small" })
+            </div>
+        </div>
+
+        @*<div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    @Html.TextBox("Submit", "Submit", new { type = "submit", @class = "w3-btn w3-white w3-border w3-border-red w3-round-large test" })
+                </div>
+            </div>*@
+    <div id="Timeform"></div>
+        <table class="table" id="TimeTable"></table>
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+    $("#Courses").change(function () {
+        debugger
+        var courseName = $("#Courses").find('option:selected').html();
+        if (courseName == "--Select Course--") {
+            $("#TimeTable").html("");
+        }
+        $.ajax({
+            type: "POST",
+            url: "/Users/CheckIn",
+            data: {
+                CourseName: courseName
+            },
+            success: function (response) {
+                if (response.time == false) {
+                    $("#Timeform").append(`<p>${response.Error}</p>`);
+                }
+                else {
+                    $("#TimeTable").html("");
+                    htmlHeader = `<tr> <th>Course Name</th>   <th>Start Time</th>   <th>End Time</th>   <th></th> </tr>`;
+                    $("#TimeTable").append(htmlHeader);
+                    Object.keys(response.getTimetable).forEach(function (num) {
+                        htmlCourselist = `<tr> <td>${response.getTimetable[num].CourseName}</td>   <td>${response.getTimetable[num].StartTime.toString()}</td>   <td>${response.getTimetable[num].EndTime}</td>   <td> <button id="CheckIn" value=${response.getTimetable[num].CourseTimetableId} onclick="Option('CheckIn')">Check In</button> </td> </tr>`;
+                        debugger;
+                        $("#TimeTable").append(htmlCourselist);
+                    });
+                }
+            }
+        })
+    })
+
+    function Option(checkIn) {
+        var TimeID = $("#CheckIn").val();
+        if (checkIn == "CheckIn") {
+            $("#CheckIn").html("Checked In");
+            $("#CheckIn").attr("disabled", true);
+
+            $.ajax({
+                type: "POST",
+                url: "/Users/TakeAttendance",
+                data: {
+                    CourseTimeID: TimeID
+                },
+                success: function (response) {
+                    if (response.checkin == true) {
+                        $("#CheckIn").html("Checked In");
+                    }
+                }
+            })
+        }
+    }
+</script>
+
